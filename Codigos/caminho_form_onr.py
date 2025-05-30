@@ -17,7 +17,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from tela_inicial import clicar_botoes_iniciais
 from formulario_credor import preencher_nome_credor
-from preencher_requerimento import selecionar_tipo_contrato, contrato_financiamento, matricula
+from preencher_requerimento import selecionar_tipo_contrato, contrato_financiamento, digito_verificador_contrato,matricula, endereço_imovel, data_assinatura, estado, municipio
 
 
 def get_base_path():
@@ -84,7 +84,12 @@ for _, linha in df.iterrows():
     clicar_botoes_iniciais(driver)
     selecionar_tipo_contrato(driver)
     contrato_financiamento(driver, linha)
+    digito_verificador_contrato(driver,linha)
+    data_assinatura(driver, linha)
+   # municipio(driver,linha)
+    estado(driver,linha)
     matricula(driver, linha)
+    endereço_imovel(driver,linha)
     preencher_nome_credor(driver)
 
 fechar = input("Deseja fechar o navegador? (s/n): ")
