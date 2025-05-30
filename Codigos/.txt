@@ -1,0 +1,92 @@
+
+# Loop da entrada
+
+# Login e acesso ao formulário
+driver.get("https://e-intimacao.onr.org.br/#/login")
+driver.maximize_window()
+
+
+
+try:
+    for i, linha in df.iterrows():
+
+        print(f"\n--- Executando formulário para linha {i + 1} ---")
+
+        try:
+            # Aceita cookies
+            try:
+                WebDriverWait(driver, 5).until(
+                    EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Permitir cookies')]"))
+                ).click()
+                print("Cookies permitidos com sucesso")
+            except:
+                print("Cookies já estavam aceitos")
+
+            # Acessa formulário
+            wait.until(EC.element_to_be_clickable((By.ID, "imbIntimacao"))).click()
+            
+            # Botão "Solicitação manual"
+            time.sleep(1)
+            wait.until(EC.element_to_be_clickable((By.ID, "imbPedidoManualConvenios"))).click()
+            time.sleep(1)
+
+            # Foi adicionado uma aba de aviso sobre preenchimento obrigatório do email do devedor para intimimação, porém ele não aparece sempre, então quando ele aparecer esse try é executado. Se ele não aparecer o except é executado
+            try:
+                WebDriverWait(driver, 3).until(
+                EC.element_to_be_clickable((By.ID, "btnContinuarAvisoEmail"))
+                ).click()
+                print("[INFO] Botão 'Continuar Aviso Email' clicado.")
+            except TimeoutException:
+                print("[INFO] Botão 'Continuar Aviso Email' não apareceu. Continuando fluxo normalmente.")
+
+                
+            # Aguarda a url do mapa presente na página e seleciona o estado
+            wait.until(EC.url_contains("MapaApresentacaoIN.aspx"))
+            estado_sigla = linha["estado_corresp1"]
+
+            if estado_eh_ridigital(estado_sigla):
+                escolher_estado(driver, estado_sigla)
+                wait.until(EC.element_to_be_clickable((By.ID, "btnProsseguirEtapa1"))).click()
+                time.sleep(1.5)
+
+
+                # Garante que o campo "Nome" do credor tenha sido carregado devido a um bug do próprio site
+                try:
+                    WebDriverWait(driver, 20, ignored_exceptions=(StaleElementReferenceException,)).until(
+                        lambda d: d.find_element(By.ID, "txtNomeApres").get_attribute("value").strip() != ""
+                    )
+                    nome_preenchido = driver.find_element(By.ID, "txtNomeApres").get_attribute("value")
+                    print(f"[OK] Nome carregado automaticamente: {nome_preenchido}")
+                except TimeoutException:
+                    print("[WARN] Nome não carregado. Preenchendo manualmente...")
+                    campo_nome = driver.find_element(By.ID, "txtNomeApres")
+                    campo_nome.clear()
+                    campo_nome.send_keys(nome_credor)
+
+               
+
+        # Caso tenha algum erro na execução, mostra o erro e volta para a tela inicial
+            print(f"Linha {i + 1} concluída com sucesso.")
+        except Exception as erro:
+            print(f"Erro na linha {i + 1}: {erro}")
+            traceback.print_exc()
+            time.sleep(3)
+
+            
+            
+
+except KeyboardInterrupt:
+    print("Execução interrompida com Ctrl + C.")
+
+except Exception as erro:
+    import traceback
+    traceback.print_exc()
+    input("\n[ERRO] Pressione Enter para encerrar...")
+
+
+
+finally:
+    input("Formulário finalizado. Pressione Enter para encerrar manualmente...")
+    # driver.quit()
+    
+    print("Navegador encerrado.")
