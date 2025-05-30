@@ -20,6 +20,7 @@ from formulario_credor import preencher_nome_credor
 from preencher_requerimento import selecionar_tipo_contrato, contrato_financiamento, matricula
 
 
+
 def get_base_path():
     if getattr(sys, 'frozen', False):
         return os.path.dirname(sys.executable)
@@ -42,6 +43,8 @@ if not file_path:
 
 df = pd.read_excel(file_path)
 
+
+      
 # Dados fixos do credor
 usuario = '220.070.518-26'
 senha = 'Imobjur2025'
